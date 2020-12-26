@@ -14,17 +14,40 @@ public class Main {
                 {2, 1, 0, 1, 1, 1}, {1, 0, 1, 4, 1, 3},
                 {1, 1, 3, 1, 1, 5}, {1, 4, 3, 7, 1, 4}};
         double[][] input5 = {{3, 0, 2}, {2, 0, -2}, {0, 1, 1}};
-//        System.out.println("The input matrix:\n" + print(input5) + "\n");
-//        double det = findDeterminant(input5);
-//        System.out.println("The determinant is " + det + "\n");
-//        double[][] cofactorsMat = matrixOfCofactors(input5);
-//        System.out.println("The Matrix of Cofactors:\n" + print(cofactorsMat) + "\n");
-        System.out.println("The input matrix:\n" + print(input3) + "\n");
-        double[][] minorsMat = matrixOfMinors(input3);
+        double[][] input6 = {{14.5, 0, 2}, {2, 0.589, -2.535}, {0, 4.56, 1}};
+        double[] vector = {1, 0, 2};
+
+        double[][] sum = add(input5, input6);
+        double[][] subtraction = subtract(input5, input6);
+
+        double[][] inverseMat4 = inverse(input4);
+        System.out.println("The inverse of input4:\n" + print(inverseMat4) + "\n");
+
+        // double[][] exceptionTest = subtract(input5, input4);
+        System.out.println("The sum of input5 and input6:\n" + print(sum));
+        System.out.println("The subtraction of input5 and input6:\n" + print(subtraction));
+        double[][] minorsMat = matrixOfMinors(input2);
         System.out.println("The Matrix of Minors:\n" + print(minorsMat) + "\n");
-//        double det = findDeterminant(input3);
-//        double[][] inverseMat = inverse(input3);
-//        System.out.println("The inverse of the matrix:\n" + print(inverseMat) + "\n");
+        double[][] smallerMatrix1 = smallerMatrix(input3, 3, 3);
+        double[][] smallerMatrix2 = smallerMatrix(input1, 3, 1);
+        double[][] smallerMatrix3 = smallerMatrix(input3, 0, 3);
+        double[][] smallerMatrix4 = smallerMatrix(input4, 2, 2);
+        System.out.println("Smaller matrices are:\n" + print(smallerMatrix1) + "\n"
+                + print(smallerMatrix2) + "\n");
+        System.out.println("The method I wrote is gonna be a garbage unless this works:\n"
+                + print(smallerMatrix3) + "\n" + print(smallerMatrix4) + "\n");
+
+        double det = findDeterminant(input4);
+        System.out.println("The determinant of input4 is " + det + "\n");
+        double[][] cofactorsMat = matrixOfCofactors(input3);
+        System.out.println("The Matrix of Cofactors of input3:\n" + print(cofactorsMat) + "\n");
+        System.out.println("The value of input5 multiplied by input6:\n" + print(multiplyByMat(input5, input6)) + "\n");
+        System.out.println(print(multiplyMV(input, vector)));
+
+        double[][] inverseMat = inverse(input6);
+        System.out.println(print(inverseMat) + "\n");
+        System.out.println(print(cofactorsMat) + "\n");
+        System.out.println("Test the inverse:\n" + print(multiplyByMat(inverseMat, input6)) + "\n");
     }
 
 
@@ -35,7 +58,7 @@ public class Main {
      * @param b the second input matrix
      * @return the resultant matrix y
      */
-    public static double[][] mutiply(double[][] a, double[][] b) {
+    public static double[][] multiplyByMat(double[][] a, double[][] b) {
         int m1 = a.length; // input matrix1 row number
         int n1 = a[0].length; // input matrix1 column number
         int m2 = b.length; // input matrix2 row number
@@ -57,7 +80,7 @@ public class Main {
      * @param x the input vector
      * @return the multiplication vector y
      */
-    public static double[] multiply(double[][] a, double[] x) {
+    public static double[] multiplyMV(double[][] a, double[] x) {
         int m = a.length;
         int n = a[0].length;
         if (x.length != n) throw new RuntimeException("Illegal matrix dimensions.");
@@ -68,27 +91,6 @@ public class Main {
         return y;
     }
 
-
-    /**
-     * Vector-matrix multiplication (y = x^T A)
-     * (Might be unnecessary)
-     *
-     * @param a the input vector
-     * @param x the input matrix
-     * @return the multiplication vector y
-     */
-    public static double[] multiply(double[] x, double[][] a) {
-        int m = a.length;
-        int n = a[0].length;
-        if (x.length != m) throw new RuntimeException("Illegal matrix dimensions.");
-        double[] y = new double[n];
-        for (int j = 0; j < n; j++)
-            for (int i = 0; i < m; i++)
-                y[j] += a[i][j] * x[i];
-        return y;
-    }
-
-
     /**
      * Matrix-number multiplication (y = A * x)
      *
@@ -96,7 +98,7 @@ public class Main {
      * @param x the input number
      * @return the resultant matrix y
      */
-    public static double[][] multiply(double[][] a, double x) {
+    public static double[][] multiplybyNum(double[][] a, double x) {
         int m = a.length; // input matrix1 row number
         int n = a[0].length; // input matrix1 column number
         double[][] y = new double[m][n];
@@ -160,23 +162,18 @@ public class Main {
     public static double[][] inverse(double[][] mat) {
         int m = mat.length;
         int n = mat[0].length;
-        double det = 0;
         double determinant = findDeterminant(mat);
         if (m != n)
             throw new RuntimeException("Not a square matrix.");
-
         // Step 1: Calculate the "Matrix of Minors"
-        mat = matrixOfMinors(mat);
-
-        // Step 2 & 3: Convert into "Matrix of Cofactors" and transpose all elements of it.
-        for (int i = 0; i < m; i++) {
-            for (int j = 0; j < n; j++) {
-                mat[j][i] = mat[i][j] * (double) Math.pow(-1, i + j);
-            }
-        }
-
+        double[][] matrixOfMinors = matrixOfMinors(mat);
+        // Step 2: Convert into "Matrix of Cofactors"
+        double[][] matrixOfCofactors = matrixOfCofactors(matrixOfMinors);
+        // Step 3: Transpose all the elements inside
+        double[][] matrixTranspose = transpose(matrixOfCofactors);
         // Step 4: Multiply by 1/Determinant
-        return multiply(mat, 1 / determinant);
+        double[][] result = multiplybyNum(matrixTranspose, 1 / determinant);
+        return result;
     }
 
     /**
@@ -194,7 +191,7 @@ public class Main {
             return mat[0][0] * mat[1][1] - mat[1][0] * mat[0][1];
         else {
             for (int i = 0; i < len; i++) {
-                double[][] subMatrix = breakdown(mat, 0, i);
+                double[][] subMatrix = smallerMatrix(mat, 0, i);
                 det += mat[0][i] * findDeterminant(subMatrix) *
                         (double) Math.pow(-1, i);
             }
@@ -216,35 +213,57 @@ public class Main {
      * @param n   columm index
      * @return the breakdown matrix
      */
-    private static double[][] breakdown(double[][] mat, int m, int n) {
+    private static double[][] smallerMatrix(double[][] mat, int m, int n) {
         int len = mat.length;
-        double[][] temp = new double[len - 1][];
-        double[][] result = new double[len - 1][len - 1];
         if (mat == null || m >= len || n >= len || m < 0 || n < 0) {
             throw new RuntimeException("Illegal matrix dimensions.");
         }
-        int a = 0;
-        if (m == 0) {
-            for (int i = 1; i < len; i++)
-                temp[a++] = mat[i];
-        } else {
-            for (int i = 0; i < m; i++)
-                temp[i] = mat[i];
-            for (int i = m; i < len - 1; i++)
-                temp[i++] = mat[i];
-        }
-        for (int i = 0; i < len - 1; i++) {
-            for (int j = 0; j < n; j++)
-                result[i][j] = temp[i][j];
-            for (int j = n; j < len - 1; j++)
-                result[i][j] = temp[i][j + 1];
-        }
+        return removeCol(removeRow(mat, m), n);
+    }
+
+    /**
+     * Remove certain row of a matrix
+     * <p>
+     * Helper method for smallerMatrix
+     *
+     * @param mat       input matrix
+     * @param rowRemove row index to remove
+     * @return a new matrix with one less row
+     */
+    private static double[][] removeRow(double[][] mat, int rowRemove) {
+        int row = mat.length;
+        int col = mat[0].length;
+        double[][] result = new double[row - 1][col];
+        for (int i = 0; i < row; i++)
+            for (int j = 0; j < col; j++)
+                if (i != rowRemove)
+                    result[i > rowRemove ? i - 1 : i][j] = mat[i][j];
+        return result;
+    }
+
+    /**
+     * Remove certain column of a matrix
+     * <p>
+     * Helper method for smallerMatrix
+     *
+     * @param mat       input matrix
+     * @param colRemove column index to remove
+     * @return a new matrix with one less column
+     */
+    private static double[][] removeCol(double[][] mat, int colRemove) {
+        int row = mat.length;
+        int col = mat[0].length;
+        double[][] result = new double[row][col - 1];
+        for (int i = 0; i < row; i++)
+            for (int j = 0; j < col; j++)
+                if (j != colRemove)
+                    result[i][j > colRemove ? j - 1 : j] = mat[i][j];
         return result;
     }
 
     /**
      * Calculate the "Matrix of Minors"
-     * (Not Used, but in the purpose of testing methods)
+     * Get the determinant of each element and replace each of them
      *
      * @param mat input matrix
      * @return Matrix of Minors
@@ -260,7 +279,7 @@ public class Main {
         if (m > 2) {
             for (int i = 0; i < m; i++) {
                 for (int j = 0; j < n; j++) {
-                    newMat[i][j] = findDeterminant(breakdown(mat, i, j));
+                    newMat[i][j] = findDeterminant(smallerMatrix(mat, i, j));
                 }
             }
         }
@@ -269,7 +288,7 @@ public class Main {
 
     /**
      * Calculate the "Matrix of Cofactors"
-     * (Not Used, but in the purpose of testing methods)
+     * Change the sign of alternate cells by applying a "checkerboard" of minuses
      *
      * @param mat input matrix
      * @return Matrix of Cofactors
@@ -277,11 +296,9 @@ public class Main {
     private static double[][] matrixOfCofactors(double[][] mat) {
         int m = mat.length;
         int n = mat[0].length;
-        for (int i = 0; i < m; i++) {
-            for (int j = 0; j < n; j++) {
-                mat[i][j] *= (double) Math.pow(-1, i + j);
-            }
-        }
+        for (int i = 0; i < m; i++)
+            for (int j = 0; j < n; j++)
+                mat[i][j] *= mat[i][j] == 0 ? 0 : (double) Math.pow(-1, i + j);
         return mat;
     }
 
@@ -302,11 +319,11 @@ public class Main {
     }
 
     /**
-     * Print the matrix in a much more readable way
+     * Print a matrix in a much more readable way
      * <p>
-     * [1.0  0.0]
-     * [0.0  2.0]
-     * [2.0  1.0]
+     * [9  19  21]
+     * [24  52  57]
+     * [39  85  93]
      *
      * @param mat input matrix
      * @return formatted matrix
@@ -316,8 +333,11 @@ public class Main {
         int m = mat.length;
         int n = mat[0].length;
         DecimalFormat dF = new DecimalFormat("0.###");
-        // The pattern here could also be "0.00#" to
-        // leave all integers and decimals to the thousandths
+        // If the element is an integer, the element will remain the same;
+        // while when it comes to decimals, it will keep at most thousandths place.
+        // However, "-0.0000001" will turn into "-0"
+        //
+        // Using "0.00#" here will leave all integers and decimals to the thousandths.
 
         for (int i = 0; i < m; i++) {
             builder.append("[");
@@ -328,6 +348,29 @@ public class Main {
                 else
                     builder.append("]\n");
             }
+        }
+        return builder.toString();
+    }
+
+    /**
+     * Print a vector in a much more readable way
+     * <p>
+     * [7  16  25]
+     *
+     * @param vector input vector
+     * @return formatted vector
+     */
+    public static String print(double[] vector) {
+        StringBuilder builder = new StringBuilder();
+        int len = vector.length;
+        DecimalFormat dF = new DecimalFormat("0.###");
+        builder.append("[");
+        for (int i = 0; i < len; i++) {
+            builder.append(dF.format(vector[i]));
+            if (i != len - 1)
+                builder.append("  ");
+            else
+                builder.append("]\n");
         }
         return builder.toString();
     }
